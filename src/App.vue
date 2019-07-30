@@ -121,8 +121,11 @@ export default {
       console.log('I am ready!');
     });
 
+
     // Create an event listener for messages
     client.on('message', message => {
+
+      console.log('hello')
       // If the message is "ping"
       if (message.content === 'ping') {
         // Send "pong" to the same channel
@@ -132,7 +135,7 @@ export default {
         
         message.react("🤖")
         console.log('link received')
-        
+
         if (message.content.includes('youtube') === true || message.content.includes('youtu.be') === true ) {
           console.log('youtube received')
           // message.channel.send('youtube')
