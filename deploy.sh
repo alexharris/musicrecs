@@ -7,7 +7,7 @@ set -e
 npm run build
 
 # navigate into the build output directory
-# cd dist
+cd dist
 
 # if you are deploying to a custom domain
 # echo 'www.example.com' > CNAME
@@ -21,6 +21,6 @@ git commit -m 'deploy'
 
 # if you are deploying to https://<USERNAME>.github.io/<REPO>
 # git push -f git@github.com:alexharris/musicrecs.git master:gh-pages
-git push git@github.com:alexharris/musicrecs.git master
+git push git@github.com:alexharris/musicrecs.git gh-pages
 
 cd -
