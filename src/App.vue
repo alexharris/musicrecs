@@ -1,21 +1,38 @@
 <template>
-  <div id="app">
+  <div id="app" v-bind:class="{ 'night-mode': nightMode }">
     <h1>Music Recs</h1>
+    <p><span class="link" @click="toggleNightMode">night mode</span></p>
 
     <span class="link" @click="filterNone">all</span> &nbsp;
-    <span class="link" @click="clearFilters();filterYoutube()">youtube</span>&nbsp;
+    <span class="link" @click="filterYoutube()">youtube</span>&nbsp;
     <span class="link" @click="clearFilters();filterSpotify()">spotify</span>&nbsp;
     <span class="link" @click="clearFilters();filterBandcamp()">bandcamp</span>&nbsp;
     <span class="link" @click="clearFilters();filterSoundcloud()">soundcloud</span>&nbsp;
     <span class="link" @click="clearFilters();filterOther()">other</span>
     <br /><br />
+    <h2>{{currentFilter}}</h2> 
+    <!-- <Paginate v-bind:initialMessages="this.messages" v-on:next-ten="nextTenMessages"/> -->
     <hr />
     <br />
-    <section v-for="message in messages">
+
+    <div v-if="this.currentFilter == 'All'">
+      <RenderMessages v-bind:initialMessages="this.messages" />  
+    </div>
+    <div v-else>
+      <RenderMessages v-bind:initialMessages="this.filteredMessages" />  
+    </div>
+      
+
+
+<!-- <RenderMessages v-bind:initialMessages="this.youtubeMessages" />
+<RenderMessages v-bind:initialMessages="this.messages" />    
+     -->
+
+    
+    <!-- <section v-for="message in messages">
         <div v-if="message.type == 'youtube'">
           <iframe width="560" height="315" v-bind:src="'https://www.youtube.com/embed/' + message.youtubeId" frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-        <!-- Need to use SoundCloud API to get Track ID for embedding-->
         <div v-else-if="message.type == 'soundcloud'">
           <a :href="message.url">{{message.url}}</a>
         </div>
@@ -32,80 +49,68 @@
           <a :href="message.url">{{message.url}}</a>
         </div>                 
 
-      <!-- {{message.type}} -->
-      <p><small>Posted by {{message.user}} on {{message.createdTimestamp}}</small></p>
-      <hr />
-      <br />
-    </section>
+        <p><small>Posted by {{message.user}} on {{message.createdTimestamp}}</small></p>
+        <hr />
+        <br />
+    </section> -->
     
   </div>
 </template>
 
 <script>
 
+import Paginate from './components/Paginate.vue'
+import RenderMessages from './components/RenderMessages.vue'
+
 export default {
   name: 'app',
   data: function(){
     return {
       allMessages: [],
-      filteredMessages: [],
-      messages: []
+      // filteredMessages: [],
+      messages: [],
+      currentFilter: 'All',
+      nightMode: false
     }
+  },
+  components: {
+    Paginate,
+    RenderMessages
+  },
+  computed: {
+    filteredMessages() {
+      return this.messages.filter(message => {
+         return message.type == this.currentFilter
+      })
+    },
   },
   methods: {
     clearFilters() {
       this.messages = this.allMessages;
-      this.filteredMessages = []
+      this.currentFilter = 'All'
     },
     filterYoutube() {
-      console.log('youtube')
-      return this.messages.filter((message) => {
-        if(message.type == 'youtube') {
-          this.filteredMessages.push(message)
-        }
-        this.messages = this.filteredMessages
-        
-      })
+      this.currentFilter = 'youtube'
     }, 
     filterSoundcloud() {
-      return this.messages.filter((message) => {
-        if(message.type == 'soundcloud') {
-          this.filteredMessages.push(message)
-        }
-        this.messages = this.filteredMessages
-        
-      })
+      this.currentFilter = 'soundcloud'
     }, 
     filterBandcamp() {
-      return this.messages.filter((message) => {
-        if(message.type == 'bandcamp') {
-          this.filteredMessages.push(message)
-        }
-        this.messages = this.filteredMessages
-        
-      })
+      this.currentFilter = 'bandcamp'
     },    
     filterSpotify() {
-      return this.messages.filter((message) => {
-        if(message.type == 'spotify') {
-          this.filteredMessages.push(message)
-        }
-        this.messages = this.filteredMessages
-        
-      })
+      this.currentFilter = 'spotify'
     },  
     filterOther() {
-      return this.messages.filter((message) => {
-        if(message.type == 'other') {
-          this.filteredMessages.push(message)
-        }
-        this.messages = this.filteredMessages
-        
-      })
+      this.currentFilter = 'other'
     },               
     filterNone() {
       this.messages = this.allMessages
-    }
+      this.currentFilter = 'All'
+    },
+    toggleNightMode() {
+      this.nightMode = !this.nightMode
+    }  
   },
   mounted() {
 
@@ -113,9 +118,6 @@ export default {
     const firebase = require("firebase");
     // Required for side-effects
     require("firebase/firestore");
-
-
-
 
      // load  messages
 
@@ -132,11 +134,10 @@ export default {
           spotifyTrackOrAlbum: doc.data().spotifyTrackOrAlbum,
           createdTimestamp: new Date(doc.data().createdTimestamp)
         })
-      });
-    });    
-  },
-  created() {
-    this.messages = this.allMessages
+      })
+    }).then(() =>{
+      this.messages = this.allMessages
+    })  
 
   }
 }
@@ -146,6 +147,27 @@ export default {
   .link {
     color: blue;
     cursor: pointer;
+  }
+
+  body {
+    padding: 0;
+    margin: 0;
+  }
+
+  #app {
+    padding: 10px;
+    margin: 0;
+    height: 100%;
+  }
+
+  .night-mode {
+    background-color: #021626;
+    color: white;
+
+  }
+
+  .night-mode .link, .night-mode a {
+    color: #ffd874
   }
 /* #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
