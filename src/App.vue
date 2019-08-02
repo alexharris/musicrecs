@@ -3,25 +3,22 @@
     <h1>Music Recs</h1>
     <p><span class="link" @click="toggleNightMode">night mode</span></p>
 
-    <span class="link" @click="filterNone">all</span> &nbsp;
-    <span class="link" @click="filterYoutube()">youtube</span>&nbsp;
-    <span class="link" @click="clearFilters();filterSpotify()">spotify</span>&nbsp;
-    <span class="link" @click="clearFilters();filterBandcamp()">bandcamp</span>&nbsp;
-    <span class="link" @click="clearFilters();filterSoundcloud()">soundcloud</span>&nbsp;
-    <span class="link" @click="clearFilters();filterOther()">other</span>
+    <span v-bind:class="{ link: currentFilter != 'All' }" @click="filterNone">all</span> &nbsp;
+    <span v-bind:class="{ link: currentFilter != 'youtube' }" @click="clearFilters();filterYoutube()">youtube</span>&nbsp;
+    <span v-bind:class="{ link: currentFilter != 'spotify' }" @click="clearFilters();filterSpotify()">spotify</span>&nbsp;
+    <span v-bind:class="{ link: currentFilter != 'bandcamp' }" @click="clearFilters();filterBandcamp()">bandcamp</span>&nbsp;
+    <span v-bind:class="{ link: currentFilter != 'soundcloud' }" @click="clearFilters();filterSoundcloud()">soundcloud</span>&nbsp;
+    <span v-bind:class="{ link: currentFilter != 'other' }" @click="clearFilters();filterOther()">other</span>
     <br /><br />
     <h2>{{currentFilter}}</h2> 
-    <!-- <Paginate v-bind:initialMessages="this.messages" v-on:next-ten="nextTenMessages"/> -->
-    <hr />
-    <br />
 
-    <div v-if="this.currentFilter == 'All'">
-      <RenderMessages v-bind:initialMessages="this.messages" />  
-    </div>
-    <div v-else>
-      <RenderMessages v-bind:initialMessages="this.filteredMessages" />  
-    </div>
-      
+      <!-- {{filteredMessages}} -->
+      <RenderMessages 
+        v-bind:initialMessages="this.filteredMessages"
+        v-bind:initialStartingPoint="this.initialStartingPoint" 
+        v-bind:resetPagination="this.resetPagination"
+      />  
+  
 
 
 <!-- <RenderMessages v-bind:initialMessages="this.youtubeMessages" />
@@ -59,35 +56,41 @@
 
 <script>
 
-import Paginate from './components/Paginate.vue'
 import RenderMessages from './components/RenderMessages.vue'
 
 export default {
   name: 'app',
   data: function(){
     return {
-      allMessages: [],
-      // filteredMessages: [],
-      messages: [],
+      allMessages: [], // this holds all the messages as originally queried from firebase
+      messages: [], // this is used for transitioning between all and filtered
       currentFilter: 'All',
-      nightMode: false
+      nightMode: false,
+      initialStartingPoint: 0, // the first ten show initially, so start paginating at 11
+      resetPagination: 0  //this is jsut something to iterate on to force the child component to notice whena  filter button is clicked
     }
   },
   components: {
-    Paginate,
     RenderMessages
   },
   computed: {
     filteredMessages() {
-      return this.messages.filter(message => {
-         return message.type == this.currentFilter
-      })
+      if(this.currentFilter == 'All') {
+        return this.allMessages
+      } else {
+        return this.messages.filter(message => {
+          return message.type == this.currentFilter
+        })
+      }
+
     },
   },
   methods: {
     clearFilters() {
+      console.log('clear filters')
       this.messages = this.allMessages;
       this.currentFilter = 'All'
+      this.resetPagination = this.resetPagination + 1
     },
     filterYoutube() {
       this.currentFilter = 'youtube'
@@ -110,6 +113,10 @@ export default {
     },
     toggleNightMode() {
       this.nightMode = !this.nightMode
+    },
+    nextTenMessages(messages) {
+      console.log(messages)
+      this.messages = messages
     }  
   },
   mounted() {
@@ -147,6 +154,7 @@ export default {
   .link {
     color: blue;
     cursor: pointer;
+    text-decoration: underline;
   }
 
   body {
@@ -167,7 +175,8 @@ export default {
   }
 
   .night-mode .link, .night-mode a {
-    color: #ffd874
+    color: #ffd874;
+    text-decoration: underline;
   }
 /* #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
