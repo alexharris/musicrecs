@@ -32,6 +32,12 @@
       <hr />
       <br />
     </div>  
+    <p>
+      <span v-if="this.startingPoint >= 10" @click="getPrevious10Messages();" ><span class="link"><< 10</span> | </span>    
+      <span v-if="this.startingPoint >= 10">Viewing {{startingPoint + 1}}—{{endNumber}} of {{initialMessages.length}}</span>
+      <span v-else>Viewing 1—10 of {{initialMessages.length}}</span>  
+      <span v-if="this.startingPoint + 10 < initialMessages.length" @click="getNext10Messages();" > | <span class="link"> >> 10</span></span>
+    </p>    
   </div>
 </template>
 
